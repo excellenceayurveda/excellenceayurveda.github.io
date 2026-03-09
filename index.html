@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Excellence Ayurveda – Certificate Generator</title>
+
+<link rel="icon" href="logo.ico">
+
+<link href="https://fonts.googleapis.com/css2?family=Allura&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+
+:root{
+--green:#2e5d3a;
+--dark:#1a3c26;
+--gold:#c9a96e;
+--cream:#fdfaf3;
+--border:#e0e0d8;
+}
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+body{
+font-family:'Inter',sans-serif;
+background:linear-gradient(-45deg,#fdfaf3,#f0ede5,#e8e2d3,#fdfaf3);
+background-size:400% 400%;
+animation:bgmove 16s ease infinite;
+padding:20px;
+}
+
+@keyframes bgmove{
+0%{background-position:0% 50%;}
+100%{background-position:100% 50%;}
+}
+
+.container{
+max-width:1000px;
+margin:auto;
+background:white;
+border-radius:18px;
+overflow:hidden;
+box-shadow:0 10px 40px rgba(0,0,0,0.1);
+}
+
+header{
+background:linear-gradient(135deg,var(--green),var(--dark));
+color:white;
+padding:40px;
+text-align:center;
+}
+
+h1{
+font-family:'Allura',cursive;
+font-size:56px;
+color:var(--gold);
+}
+
+.content{
+padding:40px;
+text-align:center;
+}
+
+.timer-box{
+background:linear-gradient(135deg,var(--green),var(--dark));
+padding:20px;
+border-radius:12px;
+color:white;
+margin-bottom:30px;
+}
+
+.timer-title{
+font-weight:600;
+margin-bottom:6px;
+}
+
+.timer{
+font-size:26px;
+font-weight:700;
+color:#ffd67a;
+}
+
+input{
+padding:14px;
+font-size:18px;
+width:100%;
+max-width:420px;
+border-radius:10px;
+border:2px solid var(--border);
+text-align:center;
+margin-top:10px;
+}
+
+.buttons{
+margin-top:20px;
+display:flex;
+justify-content:center;
+gap:10px;
+flex-wrap:wrap;
+}
+
+button{
+padding:12px 20px;
+font-weight:600;
+border:none;
+border-radius:8px;
+cursor:pointer;
+}
+
+#generateBtn{background:var(--green);color:white;}
+#downloadPdf{background:var(--gold);color:white;}
+#downloadJpg{background:#555;color:white;}
+
+button:disabled{
+opacity:0.4;
+cursor:not-allowed;
+}
+
+canvas{
+margin-top:30px;
+border:1px solid #ddd;
+border-radius:6px;
+max-width:100%;
+}
+
+footer{
+background:var(--dark);
+color:white;
+text-align:center;
+padding:15px;
+margin-top:20px;
+}
+
+.popup{
+position:fixed;
+inset:0;
+background:rgba(0,0,0,0.4);
+display:flex;
+align-items:center;
+justify-content:center;
+visibility:hidden;
+opacity:0;
+transition:0.25s;
+}
+
+.popup.active{
+visibility:visible;
+opacity:1;
+}
+
+.popup-box{
+background:white;
+padding:25px;
+border-radius:12px;
+text-align:center;
+max-width:350px;
+box-shadow:0 10px 30px rgba(0,0,0,0.2);
+}
+
+.popup-box h3{
+color:#c0392b;
+margin-bottom:10px;
+}
+
+.popup-box button{
+margin-top:10px;
+background:var(--green);
+color:white;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<header>
+<h1>Excellence Ayurveda</h1>
+<p>Ancient Wisdom • Modern Learning</p>
+</header>
+
+<div class="content">
+
+<div class="timer-box">
+<div class="timer-title">⏳ Hurry Up — Last Chance to Download Your Certificate</div>
+<div id="countdown" class="timer"></div>
+</div>
+
+<label>Verify Your Enrollment</label><br>
+
+<input id="nameInput" placeholder="Enter Full Name">
+
+<div class="buttons">
+<button id="generateBtn">Generate Certificate</button>
+<button id="downloadPdf" disabled>PDF</button>
+<button id="downloadJpg" disabled>JPG</button>
+</div>
+
+<canvas id="canvas" width="1400" height="1050"></canvas>
+
+<p id="status">Ready for verification 🌿</p>
+
+</div>
+</div>
+
+<footer>
+© <span id="year"></span> Excellence Ayurveda Academy
+</footer>
+
+<div id="popup" class="popup">
+<div class="popup-box">
+<h3 id="popupTitle"></h3>
+<p id="popupMessage"></p>
+<button onclick="closePopup()">OK</button>
+</div>
+</div>
+
+<script>
+
+document.getElementById("year").textContent=new Date().getFullYear()
+
+const studentList=[
+  "DIVYA YADAV",
+  "NIKHIL NITIN HADALE",
+  "Shravani Tukaram Gaikwad ",
+  "Dr Kusum Sharma ",
+  "Aditya Bandgar ",
+  "SHRUTI SANJAY SALVI ",
+  "KOMAL MEENA ",
+  "Kanchan Verma ",
+  "Anjali jain",
+  "Aakanksha Acharya ",
+  "MALKEET SINGH",
+  "ABHIJIT BISWAS",
+  "Eesha Dhamapurkar ",
+  "Shritej Ubhad ",
+  "DR PRIYA MUDHGIL ",
+  "Rashmi Manker ",
+  "DR. PUNAMCHAND BURDE",
+  "Kajal vinayak Kumbhar ",
+  "ARATI NAMDEV MAGAR",
+  "Arti",
+  "Arti kestwal ",
+  "Dr Vikash Singhal",
+  "DR.ANUJA VIJAY BHENDEKAR",
+  "Manshi",
+  "DHRUMIL BHATIA",
+  "Noopur yadav ",
+  "Himnesh bansal",
+  "HIMANSHU",
+  "KALYANI VAYASRAO HUMANE",
+  "DR ASHISH KUMAR MISHRA ",
+  "ARJAV GANGWAR ",
+  "ADITI SINGH",
+  "Dr. Harshit Choudhary ",
+  "ROHAN VERMA",
+  "Vd.POOJA GARG",
+  "Ramji ",
+  "Anjali pal",
+  "Angel Chaudhary ",
+  "YASH KUMAR",
+  "VARUN JAIN",
+  "Sandhya yadav",
+  "PRAMOD SHARMA ",
+  "NEHA YADAV ",
+  "OZA DEVANG RAMESHBHAI",
+  "Dr Ajeet Kumar Yadav ",
+  "BIPIN KUMAR",
+  "Dr. REWATI RAMAN SAHU",
+  "DR. MOHAMMAD ARMAN ",
+  "Dr. YOGESH KUMAR SHARMA ",
+  "Dr.Rahul Kumar Yadav ",
+  "AAYUSHI AGARWAL",
+  "JASWANT SINGH",
+  "MRUTYUNJAYA MEHER ",
+  "Dr Vikram kumar kuldeep ",
+  "SMITA BHAIJI",
+  "BHAWANA SHARMA",
+  "ANUPAM",
+  "DR. NISHA CHAUDHARY ",
+  "VIJAY PRAKASH",
+  "RAJESH SINGH ",
+  "Chandra Madhu Bharti ",
+  "Rutuja Santosh gavali ",
+  "AMRUT VASANT BANSODE ",
+  "HIMANSHU KUMAR ",
+  "Akanksha Sharma ",
+  "ASHMIT",
+  "RAMAN ",
+  "AYUSHI AGRAWAL",
+  "Abhishek yadav",
+  "JAIN DIPTI DEVILAL ",
+  "Anushka patel",
+  "Mohini yadav ",
+  "PRADNYA SANTOSH VEER",
+  "atul rahangdale",
+  "Nirmala mehta",
+  "KHUSHBOO Rajendra kumar Mishra",
+  "DR. AKASH SRIVASTAVA ",
+  "Dr.ARADHANA RATHOD ",
+  "Km . Mamta ",
+  "Sanika satish surve",
+  "PRATIMA BHOORIAN",
+  "RAHUL KUMAR VERMA",
+  "Seema bunkar ",
+  "Dr Anjali Rawat",
+  "AKHILESH PANDEY",
+  "Dr chanchal sharma ",
+  "DR. DIKSHA VERMA ",
+  "RAHUL PASRICHA ",
+  "VD.SHRUTI DESHLAHRA",
+  "Dr. Tanya Bhawnani ",
+  "DR. ADITYA ANANTRAO KULKARNI",
+  "SATVIKA MISHRA ",
+  "SRIMOYEE BHATTACHARYA ",
+  "DR. PRINKA",
+  "ANIKET YADAV ",
+  "Dr. Madhu Dixit",
+  "SAURABH KUMAR ",
+  "Dr munish bali ",
+  "DR.SWARAJ SUDHAKAR GIRE",
+  "Pooja .D.Idhole",
+  "SANJAY KUMAR GUPTA",
+  "AKSHAT SHARMA",
+  "DR ASHUTOSH VISHWAKARMA",
+  "Vd.Shrikant Shinde",
+  "Vaidya  Tushar Biswas",
+  "Vd Rahul jain",
+  "DR. JAY DIWAKAR",
+  "Devyani Rathore ",
+  "RABARI PRAPTI ",
+  "Dr. Damini Sahu",
+  "NARENDRA KAPOORIA ",
+  "Kanahaiya kumar Rai ",
+  "VALISH ",
+  "SAMPADA ALKESH JAJOO ",
+  "VD. PRARIT GOYAL",
+  "PAYAL MANJULNATH BHAVARE ",
+  "PRATIK SURESH SOLANKE",
+  "Dr. Akriti Jain",
+  "POOJA KHOSE",
+  "Dr. Riddhi Ghumaliya ",
+  "ANSHU RAI",
+  "Lalitha ",
+  "Lokesh kumar ",
+  "MAHIMA PRASAD BEHERA ",
+  "SUDHANSHU SAGAR SHAMBHARKAR ",
+  "VD LALITKUMAR SHARADRAO PATIL ",
+  "Harshal Karansing Tadvi ",
+  "Vd shweta Kalmundale ",
+  "ARADHANA SRIVASTAVA ",
+  "SALONI MANOJKUMAR SONAR",
+  "RAAJ SINGH",
+  "Rupali Manik Khiste",
+  "Dr.Herekar Haripriya ",
+  "Jeetendra Kumar",
+  "ROHAN TANAJI MALI",
+  "ATHARV SANDIP MOHARIR ",
+  "MIMANSA MISHRA ",
+  "Anjali Parmar ",
+  "ARPIT KUMAR DOHARE ",
+  "Sangeeta Sahoo",
+  "Dr.Aditya Shekhar Purnendu",
+  "UMANG AGRAWAL",
+  "DR SHWETA MOURYA",
+  "AFRANA KHATOON",
+  "SHUBHAM DNYANESHWAR SUL",
+  "Dr Aditya gupta",
+  "Ashwini Naik",
+  "Vedant kataria ",
+  "Rahul",
+  "SAURABH KUMAR",
+  "DR ANIL SHARMA ",
+  "Patel Khushi Sanjaybhai",
+  "Dr AAYUSHI SAGAR ",
+  "BRIJESH KUMAR CHAURASIA",
+  "Dr. RISHABH GAUTAM",
+  "NALAJALA PRADEEP",
+  "ANANDA N S",
+  "DR ARPITA GUPTA ",
+  "SUHAIL KAIF",
+  "PRAVEEN KUMAR ",
+  "KRISHAN GOPAL GUPTA",
+  "Sachin",
+  "Aakriti Jain ",
+  "Dr Kaushal Patil",
+  "M Basavaraja ",
+  "PRANAVI ANTHWAL ",
+  "Dr. Vishal Saini",
+  "LEENA JAIN ",
+  "DR SATISH SURYAWANSHI ",
+  "PRANAV PRAKASH JADHAV ",
+  "RAJA SHANTANU ",
+  "DR. SHUBHAM SHAHAJI BORSE",
+  "Dr Savita Nehra ",
+  "Akshay parashar ",
+  "ASHA GAUTAM ",
+  "DR ANITA KUMARI ",
+  "Pankaj kumar maddheshiya",
+  "AYUSHI CHOUDHARY",
+  "Dr. Shaifali Sharma ",
+  "Dr. RAJESH CHANDNA",
+  "Shubhanshi Samariya",
+  "SHRUTIKA MAHADEO TURUPKAR",
+  "Vd. YATRI KANUBHAI THAKKER ",
+  "PRAJAPATI DRASHTIBEN ",
+  "Dr. JAGRATISHRIVASTAVA ",
+  "HIMANSHU KHATTAR ",
+  "Komal yadav",
+  "AYUSHI JAIN ",
+  "Dr.gulshan",
+  "BHUMI CHANDRAYAN",
+  "Dr.Sangita Jadav",
+  "Dr.Sagar K Chilad",
+  "DR. RAVI",
+  "DR SAVITA JANGDE",
+  "CHITYALA SAIKUMAR ",
+  "NISHA INDORIA ",
+  "RIYA SHARMA ",
+  "NEHA KUMARI",
+  "RAVI DALAL",
+  "DR. DIPSHIKHA SITARAM RAKHUNDE ",
+  "Dr Bhagiya Gayatri Gangaram ",
+  "KUMUDINI PATEL",
+  "Dr Deepshikha Sharma ",
+  "Riya Hemant Thacker",
+  "Tarandeep garg",
+  "Dr. Lahamge Gayatri Satish ",
+  "Dr FAIYAZUL HAQUE ",
+  "RIYA UDDHAV PATIL",
+  "AYUSH VATS",
+  "Dr Udho Jee sharma ",
+  "POOJA SOLANKI ",
+  "Kavita Kumari Devi ",
+  "DR. YOGESH KUMAR NETAM",
+  "SABA NOOR",
+  "Shivam Rajkumar verma ",
+  "DR CHIRAG",
+  "PRIYANKA VITTHALSING RAJPUT",
+  "Minaxi",
+  "Dr Rohini Govindrao Indure ",
+  "ARADHANA GUPTA ",
+  "APARAJITA SHRIMANDHAR WANJULE ",
+  "DR.T.ABINAYA",
+  "Shubham Saini ",
+  "DR UNNATI CHAUDHARI",
+  "sonali mourya ",
+  "SHALINI KASAUDHAN ",
+  "SAMEEKSHA DOHARE ",
+  "Dr.Pranjali",
+  "NANDINI AGRAWAL ",
+  "Sandeep panwar",
+  "Dr.DILEEPCHOUDHARY U",
+  "Pooja Siloriya ",
+  "Dr. Jaspreet Bain ",
+  "DR MUSHTAQUE ANSARI",
+  "SOURABH KUSHWAHA ",
+  "JANVI VANKAR ",
+  "PRASAD GAUTAM GAWAI ",
+  "Anurag saraswat",
+  "KUSHAGRA MISHRA ",
+  "Geeta",
+  "ANIL ULHAS JADHAV",
+  "AMRUTA PRABHAKAR PATIL",
+  "Shrashti Varshney",
+  "PRERNA SHAaH",
+  "Aqleema Azeem",
+  "HAZIRA KHATOON ",
+  "UDIT GOYAL",
+  "VD SAGAR DILIP BORSE ",
+  "SUSHMA Gupta ",
+  "VIKAS MEHTA ",
+  "DR VIJAY KUMAR ",
+  "KAMLESH PARMAR ",
+  "SHIVANI KAPURKAR ",
+  "DR. SHUBHAM ",
+  "SOUJANYA S G",
+  "DR. RAJSHREE SINGH ",
+  "DAMAM VINITHA ",
+  "HEMANT",
+  "VRUSHABH BACHHAV",
+  "Dr.M.CHANDANASREE",
+  "DR. PRINCY PATEL",
+  "Dinesh kumar sahu",
+  "Ranjana patel",
+  "Dr Rahul ",
+  "Vd. Vijeyata Verma",
+  "Dr NIKITA RATHEE",
+  "RINA JADHAV",
+  "GAJENDRA KIRAR",
+  "Dr.Ankit kumar sharma ",
+  "POONAM NARWARIYA",
+  "Sakshi bobade",
+  "DR ARUNA KUMARI SANGWAN ",
+  "DR PAPPU KUMAR SINGH ",
+  "Subham Sharma ",
+  "VAISHNAVI BHUSHAN LOKHANDE ",
+  "DR. POORTI PARMAR",
+  "DR. BILAL AHMAD",
+  "Harshita",
+  "Dr.Rani",
+  "GOURAV GUPTA",
+  "Ramesh Kumar ",
+  "Nikhil kumar",
+  "SHILPA KOHLI",
+  "HIMALI DINESHBHAI CHAVDA ",
+  "SRASHTI CHAUDHARY ",
+  "Dr.Zalak M Patel ",
+  "Dr. Diksha Choudhary ",
+  "Dr. Anamika saini",
+  "Dr. Mansi Anandani ",
+  "Dr Meet Digantkumar Kapadiya ",
+  "PATEL THIRALI HASMUKHLAL ",
+  "RANI TARUA ",
+  "Dr.Yash modi",
+  "Ruchika Bhargava ",
+  "DR. MOHAMMAD SHAMSUL HUDA ",
+  "Dr Harleen Kaur ",
+  "Dr Nooruddin",
+  "Dr Dibesh kumar jha",
+  "KANCHAN MISHRA",
+  "Mohd Tahir",
+  "Dr Mohammad Tariq ansari ",
+  "HEMAVATHI M",
+  "DRASHTI JAIN ",
+  "Sakshi purnima ",
+  "RIDHIMA JAIN",
+  "Safdar hussain ",
+  "SHWETA SINGH",
+  "PARIKH NISHI SARJUBHAI ",
+  "Dr SHOAIB AkHTAR",
+  "TEJSWI PATIL",
+  "Isha Yadav",
+  "PRIYA SUNIL TAWARE ",
+  "Dr Neha Patle",
+  "DIVYA RAJPUT ",
+  "RAVI SINGH",
+  "DEEPIKA SITAULA",
+  "Dr. Kumudini Dahariya ",
+  "VD. Deepika kunwar ",
+  "AMAN SANKHLA ",
+  "Dr. Arun Kushwaha",
+  "Soumya Tandon ",
+  "DR. VASUNDHARA SHAH",
+  "Jadav ajay bharatbhai",
+  "KAMLESH CHOUDHARY",
+  "VIPIN CHANDRA BISWAS ",
+  "Vd.Neeraj R Pathak",
+  "Jiya",
+  "CHAUDHARI SURESHBHAI BHURABHAI ",
+  "NITIKA SHARMA",
+  "Himanshu Pandey ",
+  "LAXMAN SINGH",
+  "Prabhat kumar",
+  "DR. PRAGATI SAHU",
+  "Dr Sourabh Kumar Singh ",
+  "DIVYA HIREMATH ",
+  "CHESHTA CHOUDHARY",
+  "ARMAAN GAUTAM ",
+  "Kanchan Sharma",
+  "PRIYAL BANSAL",
+  "AKASH PATEL",
+  "KAFEEL AHMAD",
+  "VAIDYA ASHWANI CHAURASIA ",
+  "Deepika ",
+  "Rubali Yede ",
+  "Priya Hiralal Koli",
+  "Dr Kuldeep Tamrakar ",
+  "HARSHITA DHARWA",
+  "DR. KIRTI",
+  "DR. SAKET DASS",
+  "HIMANI GIRHARE ",
+  "Lavkush patel",
+  "Dr. SEEMA. K. M",
+  "Dr.RAMKRISHNA KUSHWAH ",
+  "Rohit Arora ",
+  "NEERJA THAKUR",
+  "Deeksha",
+  "SAUMYA SINGH",
+  "Khushi Maurya ",
+  "Purab Gangaprasad Mulange ",
+  "RAVINDRA KUMAR",
+  "ATHARVA SANJAY BOBADE",
+  "Toshif khan ",
+  "Vd.Parikshit yadav",
+  "ABDUL RAHMAN",
+  "DR VINUTA ARKASALI ",
+  "DR.SHIDDANAGOUDA",
+  "ANSHIT JAIN",
+  "DR ANUPAMA V. YADAV",
+  "Dr. Harita Sachdev ",
+  "Dr. Shivraj singh",
+  "Posam Siva priyanka",
+  "Annewar Karthikeshwari ",
+  "HARENDER ",
+  "Mitaishi singh ",
+  "PRIYADARSHANI",
+  "Dr Sushma sharma",
+  "Aarti kashyap ",
+  "MRINAL BHARTI ",
+  "DR AKLESH VERMA ",
+  "Ayush patidar",
+  "Priya Gupta ",
+  "Sushmita Parit",
+  "Aayushi Jain ",
+  "SWATI SONWANE",
+  "ALISHA SIDDIQUI",
+  "Dr sn goswami ",
+  "DR. VIJAYKUMAR JASHVANTBHAI RATHOD",
+  "PANCHAL DANESH DINESHBHAI ",
+  "Devanshi shakya ",
+  "Rashmi",
+  "Shrinidhi ",
+  "Pavithra AN ",
+  "Divyanshu Jaiswal ",
+  "MEGHA PRALHAD LANJEWAR",
+  "Rishabh Raj",
+  "DR. MANIK CHAND JAISWAL",
+  "SHITAL BHUTE ",
+  "HEMAXI INDRODIYA ",
+  "SAKSHI BHAGWAN BHUMBAR ",
+  "Vaibhav Jaiswal ",
+  "Dr. Saurav Bansal ",
+  "Sudha Dansana ",
+  "Ajay Kumar ",
+  "DR AKSHIT KUMAR ",
+  "PRANALI SHRIRANG BHANUSE",
+  "Asmita Mungilwar",
+  "Dr Sagar Rana ",
+  "VAIDYA CHETNA RATHOR ",
+  "Dr SUGANDHA RAWAT",
+  "VD.VIKASH SAHU",
+  "DR SONAL DILGAR RAMTEKE",
+  "Dr. Pratibha devi",
+  "JITIN RAJ",
+  "Dr Shivam Kumar Gupta ",
+  "NIKHITA DHARWAD ",
+  "KALASH KASHYAP ",
+  "DR UZMA FIRASATH ",
+  "Shobhana khandal",
+  "DAKSHITA TANEJA",
+  "DHARMENDRA JAKHAR ",
+  "DR. RAKSHA GANESH KANOJE ",
+  "PIYUSH RANJAN",
+  "MUSKAN LALCHAND MOHNANI ",
+  "DR VIJAY LAXMI ",
+  "HUMAIRA JALAL ",
+  "ADEEBA NAZNEEN AFZAL",
+  "Aakanksha",
+  "Dr Pragya Shrivastava ",
+  "KUNAL GAURAV ",
+  "DR NILAM HAMIRBHAI SOLANKI ",
+  "PRIYA BHARTI",
+  "Dr Rainy",
+  "GANESH DAN",
+  "YASHPAL chadha",
+  "Arpan Raval",
+  "PRANJAL MAHENDRA NIKAM",
+  "GAJANAN NANDKUMAR AYYA",
+  "DEVANSHI NITINBHAI SHIRVI ",
+  "MAMTA  JAIN",
+  "Rohith P K",
+  "Dr DEEPAK KAUSHIK",
+  "ANURAG PRAJAPATI ",
+  "Anuja salwatkar ",
+  "DR. SONIA MANDAL",
+  "Puneeth Raj R M",
+  "VD. POOJA KATEKAR",
+  "VIDUSHI PATEL ",
+  "DR.SUNDARSINGH KASTURSINGH DANGA",
+  "Dr. SREE R.NAIR",
+  "VIRAL DINESH PAREKH ",
+  "SHINDE SNEHA ",
+  "Dr Vichi Sharma",
+  "Dr. Khushboo Izardar",
+  "Dr Anjaly Kotiyan ",
+  "Pragyan Vijaykumar pal",
+  "AFREEN RASHID ",
+  "PRITAL CHAUDHARI ",
+  "Dr.HEMALATHA.G.S.",
+  "POOJA BABASAHEB BANSODE ",
+  "Sneha Vallabhbhai Kansagara ",
+  "Dr Sonali Suresh Rathod ",
+  "Vd Vaidehi Pathak ",
+  "Tejashwini.P Dundashi.",
+  "Apoorva",
+  "OM CHANDRAKANT NAVALE ",
+  "VAIBHAV ARJUN SONAWANE ",
+  "Dr. Pankaj Das Rohit ",
+  "SHAH AKASHKUMAR BABULAL",
+  "RAJAT KUMAR GARG",
+  "JANHAVI D KOSHATWAR ",
+  "Shivani janjal ",
+  "Pallavi",
+  "Karthikeyan ",
+  "Dr Komal Maurya",
+  "JEEVITHA R U",
+  "HARSH RANJAN ",
+  "Dr Yogesh Pramod Bobde",
+  "Dr Yogita Yadav ",
+  "AYUSH KUMAR ",
+  "Peyush Pragya Shree ",
+  "VISHAL KUMAR",
+  "Kavita Shewale ",
+  "Dr.Ishwari.K",
+  "Dr. Mandakini Dwivedi ",
+  "AMAN AGARWAL",
+  "AKRITI KUMARI ",
+  "Dr. Karishma Kishor Mahajan ",
+  "DR DEEPA RAJPUT ",
+  "SAKSHI DNYANESHWAR NAIKWADE ",
+  "Ashish Kumar Pandey ",
+  "Dr. Saloni",
+  "Kriti Mani",
+  "RIMPALKUMARI ",
+  "Dr. Akshya Keserwal ",
+  "Dr.BAJRANG SAINI",
+  "Dr.Yogita Shaktawat",
+  "ANAL RAMESH KAUSHIK ",
+  "DR. NISHA",
+  "Akshay Sharma",
+  "AVIRAL SINGH"
+]
+
+const canvas=document.getElementById("canvas")
+const ctx=canvas.getContext("2d")
+
+const pdfBtn=document.getElementById("downloadPdf")
+const jpgBtn=document.getElementById("downloadJpg")
+const generateBtn=document.getElementById("generateBtn")
+const input=document.getElementById("nameInput")
+const status=document.getElementById("status")
+
+let verifiedStudent=null
+
+const bg=new Image()
+bg.src="template.png"
+
+bg.onload=()=>{
+ctx.drawImage(bg,0,0,canvas.width,canvas.height)
+}
+
+function normalize(name){
+return name.toLowerCase().replace(/\s+/g," ").trim()
+}
+
+function generateCertificate(){
+
+const user=input.value.trim()
+
+const match=studentList.find(n=>normalize(n)===normalize(user))
+
+if(!match){
+
+verifiedStudent=null
+resetCanvas()
+
+showPopup(
+"User Not Found",
+"Make sure you are registered. Only registered students can generate certificates."
+"Make sure the spellings are correct & also include any prefix[if any] used at time of registration."
+)
+
+status.textContent="User Not Found"
+
+return
+}
+
+verifiedStudent=match
+drawCertificate(match)
+
+}
+
+function drawCertificate(name){
+
+ctx.drawImage(bg,0,0,canvas.width,canvas.height)
+
+let size=92
+
+ctx.fillStyle="#1a0d4a"
+ctx.textAlign="center"
+ctx.textBaseline="middle"
+
+ctx.font=size+"px Allura"
+
+while(ctx.measureText(name).width>1000){
+size-=2
+ctx.font=size+"px Allura"
+}
+
+ctx.fillText(name,canvas.width/2,480)
+
+pdfBtn.disabled=false
+jpgBtn.disabled=false
+
+status.textContent="Certificate ready for "+name
+
+}
+
+function resetCanvas(){
+ctx.drawImage(bg,0,0,canvas.width,canvas.height)
+pdfBtn.disabled=true
+jpgBtn.disabled=true
+}
+
+function downloadImage(){
+
+if(!verifiedStudent){
+showPopup("Verification Required","Verify enrollment first.")
+return
+}
+
+const link=document.createElement("a")
+link.download="Certificate_"+verifiedStudent+".jpg"
+link.href=canvas.toDataURL("image/jpeg",0.92)
+link.click()
+
+}
+
+async function downloadPdf(){
+
+if(!verifiedStudent){
+showPopup("Verification Required","Verify enrollment first.")
+return
+}
+
+const {jsPDF}=window.jspdf
+
+const pdf=new jsPDF({
+orientation:"landscape",
+unit:"px",
+format:[1400,1050]
+})
+
+pdf.addImage(canvas.toDataURL("image/png"),"PNG",0,0,1400,1050)
+pdf.save("Certificate_"+verifiedStudent+".pdf")
+
+}
+
+function showPopup(title,msg){
+
+document.getElementById("popupTitle").textContent=title
+document.getElementById("popupMessage").textContent=msg
+document.getElementById("popup").classList.add("active")
+
+}
+
+function closePopup(){
+document.getElementById("popup").classList.remove("active")
+}
+
+generateBtn.onclick=generateCertificate
+jpgBtn.onclick=downloadImage
+pdfBtn.onclick=downloadPdf
+
+input.addEventListener("keypress",e=>{
+if(e.key==="Enter")generateCertificate()
+})
+
+input.addEventListener("input",()=>{
+verifiedStudent=null
+pdfBtn.disabled=true
+jpgBtn.disabled=true
+})
+
+const deadline=new Date("2026-03-11T00:00:00").getTime()
+const countdown=document.getElementById("countdown")
+
+function updateTimer(){
+
+const now=new Date().getTime()
+const diff=deadline-now
+
+if(diff<=0){
+
+countdown.textContent="Certificate window closed"
+
+generateBtn.disabled=true
+pdfBtn.disabled=true
+jpgBtn.disabled=true
+
+return
+}
+
+const d=Math.floor(diff/(1000*60*60*24))
+const h=Math.floor((diff%(1000*60*60*24))/(1000*60*60))
+const m=Math.floor((diff%(1000*60*60))/(1000*60))
+const s=Math.floor((diff%(1000*60))/1000)
+
+countdown.textContent=`${d}d ${h}h ${m}m ${s}s`
+
+}
+
+setInterval(updateTimer,1000)
+updateTimer()
+
+</script>
+
+</body>
+</html>
